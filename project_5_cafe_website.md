@@ -5,6 +5,8 @@
 In this project, we will create a dynamic website for a cafe using an EC2 instance and AWS Cloud9 as our IDE. We'll set up a LAMP stack (Linux, Apache, MySQL, PHP), configure a basic website, and deploy a pre-built cafe application.
 
 ---
+![Project Architecture](https://github.com/fadykaram88/Creating-a-Dynamic-website-for-the-cafe/blob/main/m5ch-lab-end-arch.png?raw=true)
+
 
 ## Task 1: Create EC2 Instance
 
