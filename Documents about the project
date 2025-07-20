@@ -1,0 +1,123 @@
+project 5 : Creating a Dynamic website for the cafe 
+1 - let's create EC2 instance 
+first write in the search EC2 instance then choose Launch instance 
+name : aws-cloud9-CafeWebServer3
+Key pair : Vockey 
+in network settings choose edit then 
+VPC : Lab VPC 
+Subnet : Public Subnet 
+Auto-assign public IP : Enable  
+Security group : select existing security group then choose aws-cloud9-CafeWebServer-3 
+simple note : create a security group called aws-cloud9-CafeWebServer-3 then choose it  
+I have explained how to make Security group in project 4  ( how to create a VPC )  
+then choose launch instance 
+
+
+2 - let's connect to the IDE (AWS Cloud9) on the EC2 instance 
+AWS Cloud9 is a service you can run on an EC2 instance which provides an IDE that includes features like Code editor , debugger and terminal 
+note : you don't need to download a key pair to connect to IDE  
+3 - so in the search write Cloud 9 
+Advice : learn how to create Cloud9 as it is simple not hard 
+but some tips to create it 
+A - ensure that it is ubuntu or Amazon Linux 2 
+B - ensure that SSH permission are accessible by existing key pair 
+C - ensure that the security group allows to reach EC2 to Cloud9 
+D - ensure that EC2 has the agent of SSM to connect to the Cloud9
+when you open it , you will see a screen like the terminal 
+
+Task 2 let's analyzing the LAMP stack environment and confirming that the web server is accessible 
+A - first observe the OS version in the AWS Cloud9 bash terminal by writing :
+cat /proc/version
+the output will appear ( linux version 6.1.141-165.249.amzn2023........)(Red Hat 11.5.0-5) 
+B- to observe the web server , PHP details , and server state, run this command :
+sudo httpd -v
+service httpd status 
+php --version
+
+the output shows the version of the web server and notice they are not running now 
+
+4 - to start the web server , install the database and set them to start automatically after any future EC2 instance restart , run this command 
+sudo chkconfig httpd on
+sudo service httpd start
+sudo service httpd status
+#verify database
+sudo mariadb --version
+sudo systemctl enable mariadb
+#
+sudo chkconfig mariadb on
+sudo service mariadb start
+sudo service mariadb status
+
+5 - to configure the EC2 instance so you can use AWS Cloud9 to edit the web server files , run this command :
+ln -s /var/www/ /home/ec2-user/environment
+sudo chown ec2-user:ec2-user /var/www/html
+
+A - the first command creates a symlink from the default AWS Cloud9 editor workspace to the /var/www directory that contains your web server files 
+
+B - the second command changes the ownership of the HTML subdirectory so that the ec2-user can edit and create new files in it 
+6 - let's create a test webpage 
+ in the left expand CafeWebServer then expand www then choose file above and choose new file 
+then write 
+<html>Hello from the café web server!</html>
+then ctrl+s to save it and write index.html then save 
+7 - next step let's go to make the website accessible from the internet 
+note : don't close the Cloud9 
+8 -  in the console search about EC2
+ then choose the instance you have created 
+then choose security tap and open Security groups links
+ then go down and when you see inbound rules then choose edit rule 
+choose Add rule 
+Type : HTTP 
+Port : 80 
+CIDR Block : 0.0.0.0/0
+9 - let's install the cafe app  
+to download and extract the web app files , run this command  in the Cloud9 in the terminal
+cd ~/environment
+wget https://aws-tc-largeobjects.s3.us-west-2.amazonaws.com/CUR-TF-200-ACACAD-3-113230/03-lab-mod5-challenge-EC2/s3/setup.zip
+unzip setup.zip
+wget https://aws-tc-largeobjects.s3.us-west-2.amazonaws.com/CUR-TF-200-ACACAD-3-113230/03-lab-mod5-challenge-EC2/s3/db.zip
+unzip db.zip
+wget https://aws-tc-largeobjects.s3.us-west-2.amazonaws.com/CUR-TF-200-ACACAD-3-113230/03-lab-mod5-challenge-EC2/s3/cafe.zip
+unzip cafe.zip -d /var/www/html/
+cd /var/www/html/cafe/
+wget https://docs.aws.amazon.com/aws-sdk-php/v3/download/aws.zip
+wget https://docs.aws.amazon.com/aws-sdk-php/v3/download/aws.phar
+unzip aws -d /var/www/html/cafe/
+chmod -R +r /var/www/html/cafe/
+
+to configure the app parameters so in the bash terminal , run this command 
+cd
+cd environment/setup/
+./set-app-parameters.sh
+
+don't close the Cloud9 then come back to the AWS Console and 
+10 -search about Secrets Manager then choose Secrets 
+then choose /cafe/dbpassword 
+I recommend you should learn how to store a secret !!!!!
+then choose Retrieve secret value
+and the value which appears , take a copy of this value and save it in the clipboard as we will use it later .
+11 - let's configure the MySQL database to support the cafe app so come back to the Cloud9 and run this command 
+cd ../db/
+./set-root-password.sh
+./create-db.sh
+12 - to connect to the MySQL client to the database run this command:
+mysql -u admin -p
+then write the password that you have taken 3 minutes ago 
+13 - to see the contents of the database you have created write :
+show databases;
+use cafe_db;
+show tables;
+select * from product;
+exit;
+14 - to update the time zone configuration in PHP write 
+sudo sed -i "2i date.timezone = \"America/New_York\" " /etc/php.ini
+sudo service httpd restart
+the first command configures the time zone in PHP SW 
+the second command restart the web server to update the configuration 
+15 - to open the cafe website write 
+http://<public-ip>/cafe 
+replace <public-ip> with the public IPv4 of the instance 
+but what if the website didn't work ?
+the problem may be in the permissions so look in the permissions  
+16 - I wish if the project is fine to you 
+17 - good bye and see you in other project 
